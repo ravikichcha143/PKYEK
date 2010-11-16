@@ -40,7 +40,6 @@ package
 		
 		//---------------------------- initApp ----------------------------
 		
-		
 		private function initApp():void
 		{
 			trace("We are in init App");
