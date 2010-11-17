@@ -10,7 +10,7 @@ package com.codedrunks.socnet
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
 	
-	import ikriti.natgeo.vo.AttachmentVO;
+	//import ikriti.natgeo.vo.AttachmentVO;
 	
 	public class SocnetAPI extends EventDispatcher
 	{

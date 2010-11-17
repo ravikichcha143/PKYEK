@@ -1,18 +1,60 @@
 package
 {
+	import com.adobe.xml.syndication.generic.Image;
+	import com.codedrunks.components.flash.Image;
+	import com.codedrunks.components.flash.Share;
+	import com.codedrunks.components.flash.Twitter;
+	import com.codedrunks.socnet.SocnetAPI;
+	import com.codedrunks.socnet.events.SocnetAPIEvent;
+	import com.codedrunks.socnet.events.SocnetUserInfoEvent;
+	
 	import flash.display.Loader;
 	import flash.display.MovieClip;
 	import flash.events.Event;
+	import flash.events.IOErrorEvent;
 	import flash.events.MouseEvent;
+	import flash.events.SecurityErrorEvent;
+	import flash.net.URLLoader;
 	import flash.net.URLRequest;
 	import flash.system.Security;
+	import flash.utils.Timer;
 	
 	public class PKYEK extends MovieClip
 	{
-		
+		private var flashvars:Object;
 		public var player:Object;
 		public var loader:Loader = new Loader();
 		public var videoId:String = "e9AUSUSr2qc";
+		
+		private var applicationID:String = "141829609202805";
+		private var secretKey:String = "47777f0d9c678eea4fd1a3f4071dc475";
+		private var scope:String = "publish_stream,user_photos";
+		private var redirectURI:String = "http://apptikka.com/starone/fb/PKYEK/canvas/callback.html";
+		private var socnetAPI:SocnetAPI;
+		private var profilePicLoader:Loader;
+		private var player2:Object;
+		private var player3:Object;
+		private var timer:Timer = new Timer(1000);
+		private var loaderTwo:Loader;
+		private var loaderThree:Loader;  
+		private var playerNumber:Number = 1;
+		
+		private var share:Share;
+		private var embedCode:String;
+		private var wildfireUIConfig:String;
+		private var memberId:String;
+		private var twitter:Twitter;   
+		[Bindable]
+		private var shareImage:com.codedrunks.components.flash.Image = new com.codedrunks.components.flash.Image();
+		private var image:com.codedrunks.components.flash.Image = new com.codedrunks.components.flash.Image();
+		[Bindable]
+		private var fbUserName:String = "";
+		private var showShare:Boolean = false;
+		
+		private var shareTimer:Timer = new Timer(2000);
+		
+		//private var facebookWall:FacebookWall = new FacebookWall();
+		
 		
 		public function PKYEK()
 		{
@@ -20,6 +62,151 @@ package
 			registerEvents();
 			initApp();
 		} 
+		
+		public function setFlashvars(parameters:Object):void
+		{
+			flashvars = parameters;
+			init();
+			
+			trace("set flash vars");
+		}
+		
+		private function init():void
+		{
+			trace("init()");
+			loadConfig();
+			
+			//addToFacebookBtn.addEventListener(MouseEvent.CLICK, handleAddToFacebookBtnClick);
+			//shareBtn.addEventListener(MouseEvent.CLICK, handleShareBtnClick);
+			//twitterBtn.addEventListener(MouseEvent.CLICK, handleTwitterBtnClick);
+		}
+		
+		private function loadConfig():void
+		{
+			trace("reachedload config");
+			var urlLoader:URLLoader = new URLLoader();
+			urlLoader.addEventListener(Event.COMPLETE, handleConfigLoadComplete);
+			urlLoader.addEventListener(IOErrorEvent.IO_ERROR, handleConfigLoadIOError);
+			urlLoader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, handleConfigLoadSecurityError);
+			urlLoader.load(new URLRequest(flashvars.configUrl));
+		}
+		/**
+		 @ handles the load IO error event	
+		 
+		 @ method dispose (private)
+		 @ params event:IOErrorEvent.
+		 @ usage <code></code>
+		 @ return void
+		 */			
+		private function handleConfigLoadIOError(event:IOErrorEvent):void
+		{
+			trace("Error --> Failed loading 'url' due to IO Error.");
+		}
+		
+		/**
+		 @ handles the load security error	event
+		 
+		 @ method dispose (private)
+		 @ params event:SecurityErrorEvent.
+		 @ usage <code></code>
+		 @ return void
+		 */			
+		private function handleConfigLoadSecurityError(event:SecurityErrorEvent):void
+		{
+			trace("Error --> Failed loading 'url' due to security reasons.");
+		}
+		
+		/**
+		 @ handles the load complete event	
+		 
+		 @ method dispose (private)
+		 @ params event:Event.
+		 @ usage <code></code>
+		 @ return void
+		 */		
+		
+		
+		private function handleConfigLoadComplete(event:Event):void
+		{
+			
+			trace("reached handleload Complete");
+			
+			var xml:XML = XML(event.target.data);
+			
+			embedCode = xml.embedCode;
+			wildfireUIConfig = xml.wildfireConfig;
+			
+			var tokens:XMLList = xml..token;
+			for each (var token:XML in tokens) {
+				var tokenValue:String = flashvars[token.@name];
+				
+				if (tokenValue == null) {
+					tokenValue = token.@value;
+				}
+				/* *
+				if (!httpRe.test(tokenValue as String) && urlTokens[token.@name] == true) {
+				tokenValue = baseUrl + tokenValue;	
+				}
+				/* */
+				
+				flashvars[token.@name] = tokenValue;
+			}
+			
+			initSocnet();
+		}
+		
+		private function initSocnet():void
+		{
+			socnetAPI = SocnetAPI.getInstance();
+			socnetAPI.addEventListener(SocnetAPIEvent.INITIALIZED, handleSocnetInitialize);
+			socnetAPI.addEventListener(SocnetAPIEvent.INITIALIZE_FAILED, handleSocnetInitializeFail);
+			socnetAPI.initialize(flashvars, applicationID, secretKey, scope, redirectURI);
+		}
+		
+		private function handleSocnetInitializeFail(event:SocnetAPIEvent):void
+		{
+			socnetAPI.removeEventListener(SocnetAPIEvent.INITIALIZED, handleSocnetInitialize);
+			socnetAPI.removeEventListener(SocnetAPIEvent.INITIALIZE_FAILED, handleSocnetInitializeFail);
+		}
+		
+		private function handleSocnetInitialize(event:SocnetAPIEvent):void
+		{
+			socnetAPI.removeEventListener(SocnetAPIEvent.INITIALIZED, handleSocnetInitialize);
+			socnetAPI.removeEventListener(SocnetAPIEvent.INITIALIZE_FAILED, handleSocnetInitializeFail);
+			
+			fetchAuthorProfile();
+		}
+		
+		private function fetchAuthorProfile():void
+		{
+			socnetAPI.addEventListener(SocnetUserInfoEvent.USER_INFO_FETCHED, handleProfileInfoFetch);
+			socnetAPI.addEventListener(SocnetUserInfoEvent.USER_INFO_FAILED, handleProfileInfoFail);
+			socnetAPI.getProfileInfo();			
+		}
+		
+		
+		private function handleProfileInfoFetch(event:SocnetUserInfoEvent):void
+		{
+			showShare = true;
+			socnetAPI.removeEventListener(SocnetUserInfoEvent.USER_INFO_FETCHED, handleProfileInfoFetch);
+			socnetAPI.removeEventListener(SocnetUserInfoEvent.USER_INFO_FAILED, handleProfileInfoFail);
+			
+			fbUserName = event.userName;
+			profileMc.profileName.text = event.userName;
+			image.source = event.userPic;
+			image.width = profileMc.profilePicLoader.width;
+			image.height = profileMc.profilePicLoader.height;
+			profileMc.profilePicLoader.addChild(image);
+			shareImage = image;
+			//initApp();
+		}
+		
+		private function handleProfileInfoFail(event:SocnetUserInfoEvent):void
+		{
+			socnetAPI.removeEventListener(SocnetUserInfoEvent.USER_INFO_FETCHED, handleProfileInfoFetch);
+			socnetAPI.removeEventListener(SocnetUserInfoEvent.USER_INFO_FAILED, handleProfileInfoFail);
+			showShare = false;
+		}
 		
 		private function registerEvents():void
 		{  
@@ -36,7 +223,6 @@ package
 		{
 			trace("Abhay button clicked");   
 		}
-		
 		
 		//---------------------------- initApp ----------------------------
 		

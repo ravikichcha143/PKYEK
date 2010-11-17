@@ -23,7 +23,6 @@ package com.codedrunks.components.flash
 			setStyle("selectedUpSkin", CustomCellBgSelected);
 			setStyle("selectedDownSkin", CustomCellBgSelected);
 			setStyle("selectedOverSkin", CustomCellBgSelected); 
-			
 			/* *
 			tweetText = new TextField();
 			tweetText.autoSize = TextFieldAutoSize.LEFT;

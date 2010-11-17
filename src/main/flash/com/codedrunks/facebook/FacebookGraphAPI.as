@@ -13,7 +13,7 @@ package com.codedrunks.facebook
 	import flash.net.URLVariables;
 	import flash.system.Security;
 	
-	import ikriti.natgeo.vo.AttachmentVO;
+	//import ikriti.natgeo.vo.AttachmentVO;
 	
 	import sk.yoz.events.FacebookOAuthGraphEvent;
 	import sk.yoz.net.FacebookOAuthGraph;
