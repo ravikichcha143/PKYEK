@@ -15,6 +15,7 @@ package
 	import flash.net.URLRequest;
 	import flash.system.ApplicationDomain;
 	import flash.system.LoaderContext;
+	import flash.system.Security;
 	import flash.utils.Timer;
 	
 	public class Container extends Sprite
@@ -24,6 +25,9 @@ package
 		private var baseUrl:String;
 		private var userId:String;
 		private var params:Object;
+		
+		Security.allowDomain("*");
+		Security.allowInsecureDomain("*");
 		
 		public function Container()
 		{

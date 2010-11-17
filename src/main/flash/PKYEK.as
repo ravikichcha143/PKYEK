@@ -1,6 +1,7 @@
 package
 {
 	import com.adobe.xml.syndication.generic.Image;
+	import com.adobe.xml.syndication.rss.Source;
 	import com.codedrunks.components.flash.Image;
 	import com.codedrunks.components.flash.Share;
 	import com.codedrunks.components.flash.Twitter;
@@ -8,12 +9,16 @@ package
 	import com.codedrunks.socnet.events.SocnetAPIEvent;
 	import com.codedrunks.socnet.events.SocnetUserInfoEvent;
 	
+	import flash.debugger.enterDebugger;
 	import flash.display.Loader;
 	import flash.display.MovieClip;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
 	import flash.events.MouseEvent;
 	import flash.events.SecurityErrorEvent;
+	import flash.net.FileFilter;
+	import flash.net.FileReference;
+	import flash.net.FileReferenceList;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
 	import flash.system.Security;
@@ -21,6 +26,8 @@ package
 	
 	public class PKYEK extends MovieClip
 	{
+		Security.allowDomain("*");
+		Security.allowInsecureDomain("*");
 		private var flashvars:Object;
 		public var player:Object;
 		public var loader:Loader = new Loader();
@@ -52,6 +59,10 @@ package
 		private var showShare:Boolean = false;
 		
 		private var shareTimer:Timer = new Timer(2000);
+		[Bindable]
+		private var allTypes:Array = new Array(getTypes());
+		
+		private var fileRef:FileReferenceList = new FileReferenceList();
 		
 		//private var facebookWall:FacebookWall = new FacebookWall();
 		
@@ -62,6 +73,11 @@ package
 			registerEvents();
 			initApp();
 		} 
+		
+		private function getTypes():FileFilter
+		{
+			return new FileFilter("Images (*.jpg, *.jpeg, *.gif, *.png)", "*.jpg;*.jpeg;*.gif;*.png");
+		}
 		
 		public function setFlashvars(parameters:Object):void
 		{
@@ -207,22 +223,7 @@ package
 			socnetAPI.removeEventListener(SocnetUserInfoEvent.USER_INFO_FAILED, handleProfileInfoFail);
 			showShare = false;
 		}
-		
-		private function registerEvents():void
-		{  
-			trace("we are in register Events");
-			introBtn.addEventListener(MouseEvent.CLICK,handleIntroBtnClicked);
-			abhayBtn.addEventListener(MouseEvent.CLICK,handleAbhayBtnClicked);
-		} 
-		
-		private function handleIntroBtnClicked(event:MouseEvent):void 
-		{
-			trace("Intro button clicked");
-		}
-		private function handleAbhayBtnClicked(event:MouseEvent):void
-		{
-			trace("Abhay button clicked");   
-		}
+	
 		
 		//---------------------------- initApp ----------------------------
 		
@@ -231,8 +232,11 @@ package
 			trace("We are in init App");
 			loadIntroPlayer();
 			registerEventsForIntroVideo();
+			registerEvents();
 		}  
 		
+		   
+		 
 		//------------------------ video player for intro tab---------------------
 		
 		private function loadIntroPlayer():void
@@ -271,6 +275,8 @@ package
 				player.x = 8;
 				player.y = 200;
 				player.loadVideoById(videoId);
+				playerNumber = 1;
+				registerEvents();
 			}
 			
 			function onPlayerError(event:Event):void {
@@ -289,6 +295,104 @@ package
 			}
 
 		}
+		
+		
+		private function registerEvents():void
+		{  
+			trace("we are in register Events");
+			introBtn.addEventListener(MouseEvent.CLICK,handleIntroBtnClicked);
+			abhayBtn.addEventListener(MouseEvent.CLICK,handleAbhayBtnClicked);
+		} 
+		
+		private function handleIntroBtnClicked(event:MouseEvent):void 
+		{
+			trace("Intro button clicked");
+			derstroyplayer();
+			gotoAndStop("intro");
+			loadIntroPlayer();
+		}
+		private function handleAbhayBtnClicked(event:MouseEvent):void
+		{
+			trace("Abhay button clicked");
+			derstroyplayer();
+			gotoAndStop("page1");
+			registerEventsForpage1();  
+		}
+		
+		
+		//------------------------------ registerEventsForpage2() -    ------------------
+		
+		private function registerEventsForpage1():void
+		{
+			askYourQuestionBtn.addEventListener(MouseEvent.CLICK,handleAskYourQuestionBtnClicked);
+		}
+		
+		private function handleAskYourQuestionBtnClicked(event:MouseEvent):void
+		{
+			trace("");
+			gotoAndStop("page2");
+			registerEventsForpage2();  
+		}
+		
+		//---------------------------------- registerEventsForpage3 ---------------------
+		
+		private function registerEventsForpage2():void
+		{
+			enterBtn.addEventListener(MouseEvent.CLICK,handleEnterBtnClicked);
+		}
+		
+		
+		private function handleEnterBtnClicked(event:MouseEvent):void
+		{
+			gotoAndStop("page3"); 
+			registerEventForPage3();  
+		}
+		  
+		//------------------------------ registerEventForPage3 --------------------
+		
+		private function registerEventForPage3():void
+		{
+			browsBtn.addEventListener(MouseEvent.CLICK,handleBrowseBtnClicked);
+		}
+		private function handleBrowseBtnClicked(event:MouseEvent):void
+		{   
+			fileRef.browse(allTypes);
+			fileRef.addEventListener(Event.COMPLETE, completeHandler);
+			 
+			//gotoAndStop("page4");
+			//registerEventsForPage4();
+		}
+		private function completeHandler()
+		{
+			gotoAndStop("page4");
+			imgLoader.source = "http://i1222.photobucket.com/albums/dd489/amar_hole/DIWALI/diwali1.jpg"; 
+
+		}
+		
+		//-------------------------------- registerEventsForPage4 --------------------
+		
+		private function registerEventsForPage4():void
+		{
+			
+		}
+		
+		
+		//-------------------------------- destoy player function ---------------
+		
+		
+		private function derstroyplayer():void
+		{
+			if(playerNumber == 1)
+			{
+				player.destroy();
+				player.visible = false;
+			}
+			else 
+			{
+				
+			}
+		}
+		
 		
 		//--------------------------------- registerEventsForIntroVideo(); -------------------------
 		private function registerEventsForIntroVideo():void
