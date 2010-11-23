@@ -103,6 +103,31 @@ package com.codedrunks.socnet
 			facebookAPI.getProfileInfo();
 		}
 		
+		public function getFriends():void
+		{
+			disposeFacebookEvents();
+			facebookAPI.addEventListener(FacebookGraphAPIEvent.FETCH_FRIENDS_SUCCESS, handleFetchFriendsSuccess);
+			facebookAPI.addEventListener(FacebookGraphAPIEvent.FETCH_FRIENDS_FAIL, handleFetchFriendsFail);
+			facebookAPI.getFriends();
+		}
+		
+		private function handleFetchFriendsSuccess(event:FacebookGraphAPIEvent):void
+		{
+			disposeFacebookEvents();
+			
+			var e:SocnetUserInfoEvent = new SocnetUserInfoEvent(SocnetUserInfoEvent.FETCH_FRIENDS_SUCCESS);
+			e.friendsData = event.friendsData;
+			dispatchEvent(e);
+		}
+		
+		private function handleFetchFriendsFail(event:FacebookGraphAPIEvent):void
+		{
+			disposeFacebookEvents();
+			
+			var e:SocnetUserInfoEvent = new SocnetUserInfoEvent(SocnetUserInfoEvent.FETCH_FRIENDS_FAIL);
+			dispatchEvent(e);
+		}
+		
 		/**
 		@ handles the user info success event	
 				 	 
@@ -153,6 +178,9 @@ package com.codedrunks.socnet
 			facebookAPI.removeEventListener(FacebookGraphAPIEvent.USER_INFO_SUCCESS, handleUserInfoSuccess);
 			facebookAPI.removeEventListener(FacebookGraphAPIEvent.USER_INFO_FAIL, handleUserInfoFail);
 			
+			facebookAPI.removeEventListener(FacebookGraphAPIEvent.FETCH_FRIENDS_SUCCESS, handleFetchFriendsSuccess);
+			facebookAPI.removeEventListener(FacebookGraphAPIEvent.FETCH_FRIENDS_FAIL, handleFetchFriendsFail);
+			
 			facebookAPI.removeEventListener(FacebookGraphAPIEvent.USER_LIKES_APP, handleUserLikesApp);
 			facebookAPI.removeEventListener(FacebookGraphAPIEvent.USER_LIKES_APP_FAIL, handleUserLikesAppFail);
 		}
@@ -171,9 +199,9 @@ package com.codedrunks.socnet
 			checkWallPosted();
 		}*/
 		
-		public function publishToFeed(message:String, attachmentVO:Object, actionLinks:Array):void
+		public function publishToFeed(message:String, attachmentVO:Object, actionLinks:Array,selectedId:String):void
 		{
-			facebookAPI.publishToProfile(message,attachmentVO,actionLinks);
+			facebookAPI.publishToProfile(message,attachmentVO,actionLinks,selectedId);
 			checkWallPosted();
 		}
 		

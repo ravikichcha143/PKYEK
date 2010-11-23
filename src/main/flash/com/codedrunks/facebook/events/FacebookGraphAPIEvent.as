@@ -13,6 +13,9 @@ package com.codedrunks.facebook.events
 		public static const USER_INFO_SUCCESS:String = "userInfoSuccess";
 		public static const USER_INFO_FAIL:String = "userInfoFail";
 		
+		public static const FETCH_FRIENDS_SUCCESS:String = "fetchFriendsSuccess";
+		public static const FETCH_FRIENDS_FAIL:String = "fetchFriendsFail";
+		
 		public static const USER_LIKES_APP:String = "userLikesApp";
 		public static const USER_LIKES_APP_FAIL:String = "userLikesAppFail";
 		
@@ -22,6 +25,8 @@ package com.codedrunks.facebook.events
 		public var userName:String;
 		public var userPic:String;
 		public var userId:String;
+		
+		public var friendsData:Array;
 		
 		public function FacebookGraphAPIEvent(type:String, bubbles:Boolean=false, cancelable:Boolean=false)
 		{
